@@ -36,6 +36,8 @@ PASSWORD=secret TOKEN=dev PORT=8099 python3 -u server.py
 curl -s 'http://127.0.0.1:8099/health?token=dev'
 # Set USERNAME/PASSWORD explicitly: opt() falls back to the *generic* env var
 # name, so an inherited USERNAME (e.g. the login name) is picked up otherwise.
+# Env vars only apply to direct `python3 server.py` runs: s6's /init does not
+# forward `docker run -e` into the app, so the image must get /data/options.json.
 python3 -m py_compile server.py   # syntax check
 docker build -t cam-snapshot:test .   # same Dockerfile CI builds
 ```
