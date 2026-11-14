@@ -44,16 +44,26 @@ jobs:
 
       - name: Normalize app information
         id: normalize
+        env:
+          APP_IMAGE: ${{ steps.info.outputs.image }}
+          APP_VERSION: ${{ steps.info.outputs.version }}
+          APP_NAME: ${{ steps.info.outputs.name }}
+          APP_DESCRIPTION: ${{ steps.info.outputs.description }}
+          APP_URL: ${{ steps.info.outputs.url }}
         run: |
-          image=${{ steps.info.outputs.image }}
-          echo "image_name=${image##*/}" >> "$GITHUB_OUTPUT"
-          echo "registry_prefix=${image%/*}" >> "$GITHUB_OUTPUT"
-          echo "version=${{ steps.info.outputs.version }}" >> "$GITHUB_OUTPUT"
-          echo "name=${{ steps.info.outputs.name }}" >> "$GITHUB_OUTPUT"
-          echo "description=${{ steps.info.outputs.description }}" >> "$GITHUB_OUTPUT"
-          url=${{ steps.info.outputs.url }}
-          if [[ -n "$url" && "$url" != "null" ]]; then
-            echo "url=${url}" >> "$GITHUB_OUTPUT"
+          echo "image_name=${APP_IMAGE##*/}" >> "$GITHUB_OUTPUT"
+          echo "registry_prefix=${APP_IMAGE%/*}" >> "$GITHUB_OUTPUT"
+          echo "version=${APP_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "name=${APP_NAME}" >> "$GITHUB_OUTPUT"
+          # Values are passed via env: free text such as "..." or "(...)" is not
+          # safe to interpolate straight into the shell.
+          {
+            echo "description<<__DESCRIPTION__"
+            echo "$APP_DESCRIPTION"
+            echo "__DESCRIPTION__"
+          } >> "$GITHUB_OUTPUT"
+          if [[ -n "$APP_URL" && "$APP_URL" != "null" ]]; then
+            echo "url=${APP_URL}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Prepare build matrix
