@@ -1,5 +1,5 @@
-ARG BUILD_FROM
-FROM ${BUILD_FROM}
+# Multi-platform base image; the platform is selected by the buildx target.
+FROM ghcr.io/home-assistant/base:3.24
 
 RUN apk add --no-cache python3
 

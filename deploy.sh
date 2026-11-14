@@ -23,7 +23,7 @@ fi
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 
-cp "$APP_DIR/config.yaml" "$APP_DIR/Dockerfile" "$APP_DIR/build.yaml" \
+cp "$APP_DIR/config.yaml" "$APP_DIR/Dockerfile" \
     "$APP_DIR/README.md" "$APP_DIR/CHANGELOG.md" "$APP_DIR/server.py" "$tmp/"
 
 python3 - "$tmp/config.yaml" "$MOTIONEYE_USER" "$MOTIONEYE_PASSWORD" "$SNAPSHOT_TOKEN" <<'PY'

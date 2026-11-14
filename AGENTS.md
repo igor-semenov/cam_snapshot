@@ -12,7 +12,8 @@ build step, no package manifest.
   - `server.py` — options loader, motionEye session poller (`Grabber`), HTTP
     server (`Handler`).
   - `config.yaml` — manifest, options, schema, `image:` (GHCR), arch list.
-  - `build.yaml` — base image per arch; every `arch:` entry needs one here.
+  - `Dockerfile` — single source of truth for the build: multi-platform
+    `ghcr.io/home-assistant/base:3.24` base plus `python3`.
   - `CHANGELOG.md` — what the app store shows; update with each version bump.
 - `repository.yaml` — store metadata (name, url, maintainer).
 - `.github/workflows/lint.yaml` — `frenck/action-app-linter` + HA find-apps.
@@ -36,6 +37,7 @@ curl -s 'http://127.0.0.1:8099/health?token=dev'
 # Set USERNAME/PASSWORD explicitly: opt() falls back to the *generic* env var
 # name, so an inherited USERNAME (e.g. the login name) is picked up otherwise.
 python3 -m py_compile server.py   # syntax check
+docker build -t cam-snapshot:test .   # same Dockerfile CI builds
 ```
 
 Endpoints: `/snapshot.jpg` (alias `/snapshot`) and `/health`, both require
@@ -54,8 +56,11 @@ is intentional so a dead camera is visible.
   `CHANGELOG.md` entry, push to `main`. CI lints, builds and publishes the
   multi-arch image under the `image:` path; the first build needs the GHCR
   package switched to public in GitHub settings.
-- `build.yaml` must keep a base image for `aarch64` **and** `amd64`, matching
-  `arch:`; changing `image:` means changing the published package name too.
+- `build.yaml` is retired: don't add one back. The base image and build args
+  live in the `Dockerfile`, which must stay buildable with plain
+  `docker build cam_snapshot` (the CI action passes `BUILD_ARCH` only).
+- Changing `image:` means changing the published package name too; CI pushes
+  `<arch>-cam-snapshot` tags and then the multi-arch manifest.
 
 ## Gotchas
 
@@ -72,4 +77,4 @@ is intentional so a dead camera is visible.
   `REFRESH_SECONDS`); any new option needs an `options:` entry, a `schema:`
   entry, and a README table row.
 - `host_network: true` means `port` binds directly on the host; the app only
-  needs the Alpine `python3` from `build.yaml`.
+  needs the Alpine `python3` from the Dockerfile.
